@@ -1,0 +1,358 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Brainrot変異計算機 - STEAL THE BRAINROT</title>
+    <style>
+        body { font-family: sans-serif; background: #1a1a2e; color: #fff; display: flex; flex-direction: column; align-items: center; padding: 20px; margin: 0; }
+        .card { background: #16213e; padding: 20px; border-radius: 15px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); width: 100%; max-width: 400px; margin-bottom: 20px; position: sticky; top: 10px; z-index: 100; box-sizing: border-box; }
+        h1 { font-size: 1.1rem; text-align: center; color: #4ecca3; margin-bottom: 15px; margin-top: 0; }
+        .section { margin-bottom: 12px; }
+        label { display: block; margin-bottom: 5px; font-weight: bold; font-size: 0.8rem; color: #95a5a6; }
+        
+        select, input[type="text"], .result-box { 
+            width: 100%; padding: 10px; border-radius: 5px; border: none; 
+            background: #0f3460; color: white; font-size: 1rem; outline: none; 
+            box-sizing: border-box;
+        }
+        
+        input[type="text"] { border: 1px solid #1f4068; }
+        input[type="text"]:focus { border: 1px solid #4ecca3; }
+
+        .checkbox-group { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; background: #0f3460; padding: 8px; border-radius: 5px; }
+        .checkbox-item { display: flex; align-items: center; justify-content: space-between; cursor: pointer; font-size: 0.75rem; }
+        
+        .result-box { background: #4ecca3; color: #1a1a2e; font-size: 1.5rem; font-weight: bold; text-align: center; margin-top: 5px; min-height: 50px; display: flex; align-items: center; justify-content: center; border-radius: 8px; }
+        .formula { font-size: 0.7rem; color: #95a5a6; margin-top: 8px; text-align: center; font-family: monospace; overflow-x: auto; background: rgba(0,0,0,0.2); padding: 4px; border-radius: 4px; }
+
+        /* リストスタイル */
+        .list-container { width: 100%; max-width: 400px; background: #16213e; border-radius: 15px; padding: 15px; box-sizing: border-box; }
+        .list-title { color: #4ecca3; font-size: 0.9rem; margin-bottom: 10px; border-bottom: 1px solid #4ecca3; padding-bottom: 5px; font-weight: bold; }
+        
+        /* テーブルのスクロール対応 */
+        .table-wrapper { max-height: 500px; overflow-y: auto; border-radius: 5px; }
+        table { width: 100%; border-collapse: collapse; font-size: 0.8rem; }
+        thead { position: sticky; top: 0; background: #1f4068; z-index: 1; }
+        th, td { padding: 8px 5px; text-align: left; border-bottom: 1px solid #1f4068; }
+        
+        .rarity-dot { width: 10px; height: 10px; border-radius: 2px; display: inline-block; margin-right: 8px; vertical-align: middle; }
+        .clickable-row { cursor: pointer; transition: 0.2s; }
+        .clickable-row:hover { background: rgba(78, 204, 163, 0.1); }
+
+        /* レアリティ色 */
+        .c-common { background-color: #00d300; }
+        .c-rare { background-color: #00cae0; }
+        .c-epic { background-color: #c300e4; }
+        .c-legendary { background-color: #e9e47d; }
+        .c-mythic { background-color: #ff0000; }
+        .c-god { background-color: #ffb7f1; }
+        .c-secret { background-color: #000000; border: 1px solid #fff; }
+        .c-goat { background-color: #009cad; }
+
+        /* スクロールバーのデザイン */
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: #16213e; }
+        ::-webkit-scrollbar-thumb { background: #4ecca3; border-radius: 10px; }
+    </style>
+</head>
+<body>
+
+<div class="card">
+    <h1>Steel The Brainrot 属性・変異計算機</h1>
+
+    <div class="section">
+        <label>キャラクター基本額 ($/s)</label>
+        <input type="text" id="char-input" value="100" oninput="calculate()" placeholder="例: 14M, 2.5B">
+    </div>
+
+    <div class="section">
+        <label>属性 (Element)</label>
+        <select id="attr-select" onchange="calculate()">
+            <option value="1.0">Default (1.0x)</option>
+            <option value="1.25">Gold (1.25x)</option>
+            <option value="1.5">Diamond (1.5x)</option>
+            <option value="3.0">Galaxy (3.0x)</option>
+            <option value="5.0">Zombie (5.0x)</option>
+            <option value="6.0">Dreamy (6.0x)</option>
+            <option value="7.0">Ice & Fire (7.0x)</option>
+            <option value="8.0">Carnival (8.0x)</option>
+            <option value="9.0">Aqua (9.0x)</option>
+            <option value="9.5">Neon (9.5x)</option>
+            <option value="10.0">Halloween (10.0x)</option>
+            <option value="10.0">Rainbow (10.0x)</option>
+            <option value="10.5">Chocolate (10.5x)</option>
+            <option value="11.0">Darkness (11.0x)</option>
+            <option value="11.0">Toxic (11.0x)</option>
+            <option value="12.0">Christmas (12.0x)</option>
+        </select>
+    </div>
+
+    <div class="section">
+        <label>変異タグ (Mutations)</label>
+        <div class="checkbox-group">
+            <label class="checkbox-item">Lightning(+1.5)<input type="checkbox" class="mutation" value="1.5" onchange="calculate()"></label>
+            <label class="checkbox-item">Frozen(+2)<input type="checkbox" class="mutation" value="2.0" onchange="calculate()"></label>
+            <label class="checkbox-item">Fireworks(+2)<input type="checkbox" class="mutation" value="2.0" onchange="calculate()"></label>
+            <label class="checkbox-item">Glitch(+3)<input type="checkbox" class="mutation" value="3.0" onchange="calculate()"></label>
+            <label class="checkbox-item">Pumpkin(+4)<input type="checkbox" class="mutation" value="4.0" onchange="calculate()"></label>
+            <label class="checkbox-item">Skibidi(+5)<input type="checkbox" class="mutation" value="5.0" onchange="calculate()"></label>
+        </div>
+    </div>
+
+    <div class="section">
+        <div id="result" class="result-box">$100 /s</div>
+        <p class="formula" id="formula-text">100 * (1.0)</p>
+    </div>
+</div>
+
+<div class="list-container">
+    <div class="list-title">キャラリストからクリックしても入力できます</div>
+    <div class="table-wrapper">
+        <table>
+            <thead>
+                <tr><th>Rarity</th><th>Name</th><th>Base</th></tr>
+            </thead>
+            <tbody>
+                <tr class="clickable-row" onclick="setBase('1')"><td><span class="rarity-dot c-common"></span></td><td>Fishini Bossini</td><td>1</td></tr>
+                <tr class="clickable-row" onclick="setBase('3')"><td><span class="rarity-dot c-common"></span></td><td>Lirili Larilla</td><td>3</td></tr>
+                <tr class="clickable-row" onclick="setBase('5')"><td><span class="rarity-dot c-common"></span></td><td>Tim Cheese</td><td>5</td></tr>
+                <tr class="clickable-row" onclick="setBase('7')"><td><span class="rarity-dot c-common"></span></td><td>Fluriflura</td><td>7</td></tr>
+                <tr class="clickable-row" onclick="setBase('9')"><td><span class="rarity-dot c-common"></span></td><td>Penguino Cocosino</td><td>9</td></tr>
+                <tr class="clickable-row" onclick="setBase('10')"><td><span class="rarity-dot c-common"></span></td><td>Svinina Bombardino</td><td>10</td></tr>
+                <tr class="clickable-row" onclick="setBase('13')"><td><span class="rarity-dot c-common"></span></td><td>Pipi Kiwi</td><td>13</td></tr>
+                <tr class="clickable-row" onclick="setBase('14')"><td><span class="rarity-dot c-common"></span></td><td>Pipi Avocado</td><td>14</td></tr>
+                <tr class="clickable-row" onclick="setBase('15')"><td><span class="rarity-dot c-rare"></span></td><td>Trippi Troppi</td><td>15</td></tr>
+                <tr class="clickable-row" onclick="setBase('25')"><td><span class="rarity-dot c-rare"></span></td><td>Tung Tung Tung Sahur</td><td>25</td></tr>
+                <tr class="clickable-row" onclick="setBase('30')"><td><span class="rarity-dot c-rare"></span></td><td>Gangster Footera</td><td>30</td></tr>
+                <tr class="clickable-row" onclick="setBase('40')"><td><span class="rarity-dot c-rare"></span></td><td>Boneca Ambalabu</td><td>40</td></tr>
+                <tr class="clickable-row" onclick="setBase('50')"><td><span class="rarity-dot c-rare"></span></td><td>Pipi Corni</td><td>50</td></tr>
+                <tr class="clickable-row" onclick="setBase('55')"><td><span class="rarity-dot c-rare"></span></td><td>Ta Ta Ta Ta Sahur</td><td>55</td></tr>
+                <tr class="clickable-row" onclick="setBase('60')"><td><span class="rarity-dot c-rare"></span></td><td>Burballoni Watermeloni</td><td>60</td></tr>
+                <tr class="clickable-row" onclick="setBase('70')"><td><span class="rarity-dot c-rare"></span></td><td>Pipi Potato</td><td>70</td></tr>
+                <tr class="clickable-row" onclick="setBase('75')"><td><span class="rarity-dot c-epic"></span></td><td>Cappuccino Assassino</td><td>75</td></tr>
+                <tr class="clickable-row" onclick="setBase('100')"><td><span class="rarity-dot c-epic"></span></td><td>Brr Brr Patapim</td><td>100</td></tr>
+                <tr class="clickable-row" onclick="setBase('120')"><td><span class="rarity-dot c-epic"></span></td><td>Trulimero Trulicina</td><td>120</td></tr>
+                <tr class="clickable-row" onclick="setBase('150')"><td><span class="rarity-dot c-epic"></span></td><td>Bananita Dolphinita</td><td>150</td></tr>
+                <tr class="clickable-row" onclick="setBase('200')"><td><span class="rarity-dot c-epic"></span></td><td>Los Lirilitos</td><td>200</td></tr>
+                <tr class="clickable-row" onclick="setBase('250')"><td><span class="rarity-dot c-epic"></span></td><td>Salamino Pinguino</td><td>250</td></tr>
+                <tr class="clickable-row" onclick="setBase('275')"><td><span class="rarity-dot c-epic"></span></td><td>Tric Trac Baraboom</td><td>275</td></tr>
+                <tr class="clickable-row" onclick="setBase('300')"><td><span class="rarity-dot c-epic"></span></td><td>Los Tung TungCitos</td><td>300</td></tr>
+                <tr class="clickable-row" onclick="setBase('325')"><td><span class="rarity-dot c-epic"></span></td><td>Tukanno Bananno</td><td>325</td></tr>
+                <tr class="clickable-row" onclick="setBase('350')"><td><span class="rarity-dot c-epic"></span></td><td>Blueberrinni Octopussini</td><td>350</td></tr>
+                <tr class="clickable-row" onclick="setBase('400')"><td><span class="rarity-dot c-epic"></span></td><td>Spijuniro Golubiro</td><td>400</td></tr>
+                <tr class="clickable-row" onclick="setBase('425')"><td><span class="rarity-dot c-epic"></span></td><td>Penguini Zucchini</td><td>425</td></tr>
+                <tr class="clickable-row" onclick="setBase('450')"><td><span class="rarity-dot c-epic"></span></td><td>Blueberrini Tatticini</td><td>450</td></tr>
+                <tr class="clickable-row" onclick="setBase('500')"><td><span class="rarity-dot c-epic"></span></td><td>Gingobalo Gingobali</td><td>500</td></tr>
+                <tr class="clickable-row" onclick="setBase('200')"><td><span class="rarity-dot c-legendary"></span></td><td>Burbalona Loliloli</td><td>200</td></tr>
+                <tr class="clickable-row" onclick="setBase('300')"><td><span class="rarity-dot c-legendary"></span></td><td>Chimpanzini Bananini</td><td>300</td></tr>
+                <tr class="clickable-row" onclick="setBase('500')"><td><span class="rarity-dot c-legendary"></span></td><td>Ballerina Cappuccina</td><td>500</td></tr>
+                <tr class="clickable-row" onclick="setBase('600')"><td><span class="rarity-dot c-legendary"></span></td><td>Chef Crabracadabra</td><td>600</td></tr>
+                <tr class="clickable-row" onclick="setBase('750')"><td><span class="rarity-dot c-legendary"></span></td><td>Glorbo Fruttodillo</td><td>750</td></tr>
+                <tr class="clickable-row" onclick="setBase('900')"><td><span class="rarity-dot c-legendary"></span></td><td>Cacto Hipopotamo</td><td>900</td></tr>
+                <tr class="clickable-row" onclick="setBase('1K')"><td><span class="rarity-dot c-legendary"></span></td><td>Ballerino Lololo</td><td>1K</td></tr>
+                <tr class="clickable-row" onclick="setBase('1.2K')"><td><span class="rarity-dot c-legendary"></span></td><td>Lerulerulerule</td><td>1.2K</td></tr>
+                <tr class="clickable-row" onclick="setBase('1.5K')"><td><span class="rarity-dot c-legendary"></span></td><td>Bambini Crostini</td><td>1.5K</td></tr>
+                <tr class="clickable-row" onclick="setBase('1.7K')"><td><span class="rarity-dot c-legendary"></span></td><td>Francescoo</td><td>1.7K</td></tr>
+                <tr class="clickable-row" onclick="setBase('2K')"><td><span class="rarity-dot c-legendary"></span></td><td>Zibra Zubra Zibralini</td><td>2K</td></tr>
+                <tr class="clickable-row" onclick="setBase('2.2K')"><td><span class="rarity-dot c-legendary"></span></td><td>Bambu di Miale</td><td>2.2K</td></tr>
+                <tr class="clickable-row" onclick="setBase('2.5K')"><td><span class="rarity-dot c-legendary"></span></td><td>Mangolini Parrocini</td><td>2.5K</td></tr>
+                <tr class="clickable-row" onclick="setBase('2.7K')"><td><span class="rarity-dot c-legendary"></span></td><td>Octopuss Coconuss</td><td>2.7K</td></tr>
+                <tr class="clickable-row" onclick="setBase('3K')"><td><span class="rarity-dot c-legendary"></span></td><td>Leonelli Cactuselli</td><td>3K</td></tr>
+                <tr class="clickable-row" onclick="setBase('1.2K')"><td><span class="rarity-dot c-mythic"></span></td><td>Frigo Camelo</td><td>1.2K</td></tr>
+                <tr class="clickable-row" onclick="setBase('1.7K')"><td><span class="rarity-dot c-mythic"></span></td><td>Orangutini Ananassini</td><td>1.7K</td></tr>
+                <tr class="clickable-row" onclick="setBase('2.5K')"><td><span class="rarity-dot c-mythic"></span></td><td>Bombardiro Crocodilo</td><td>2.5K</td></tr>
+                <tr class="clickable-row" onclick="setBase('5K')"><td><span class="rarity-dot c-mythic"></span></td><td>Bombombini Gusini</td><td>5K</td></tr>
+                <tr class="clickable-row" onclick="setBase('6.25K')"><td><span class="rarity-dot c-mythic"></span></td><td>Gorillo Watermellondrillo</td><td>6.25K</td></tr>
+                <tr class="clickable-row" onclick="setBase('7K')"><td><span class="rarity-dot c-mythic"></span></td><td>Sigma Boy</td><td>7K</td></tr>
+                <tr class="clickable-row" onclick="setBase('7.5K')"><td><span class="rarity-dot c-mythic"></span></td><td>Matteo</td><td>7.5K</td></tr>
+                <tr class="clickable-row" onclick="setBase('8K')"><td><span class="rarity-dot c-mythic"></span></td><td>Los Spijuniritos</td><td>8K</td></tr>
+                <tr class="clickable-row" onclick="setBase('8.5K')"><td><span class="rarity-dot c-mythic"></span></td><td>Rhino Toasterino</td><td>8.5K</td></tr>
+                <tr class="clickable-row" onclick="setBase('9K')"><td><span class="rarity-dot c-mythic"></span></td><td>Ganganzelli Trulala</td><td>9K</td></tr>
+                <tr class="clickable-row" onclick="setBase('9.5K')"><td><span class="rarity-dot c-mythic"></span></td><td>Te Te Te Sahur</td><td>9.5K</td></tr>
+                <tr class="clickable-row" onclick="setBase('11K')"><td><span class="rarity-dot c-mythic"></span></td><td>Strawberrelli Flamingelli</td><td>11K</td></tr>
+                <tr class="clickable-row" onclick="setBase('12K')"><td><span class="rarity-dot c-mythic"></span></td><td>Elefantino Frigorifero</td><td>12K</td></tr>
+                <tr class="clickable-row" onclick="setBase('13K')"><td><span class="rarity-dot c-mythic"></span></td><td>To To To Sahur</td><td>13K</td></tr>
+                <tr class="clickable-row" onclick="setBase('14K')"><td><span class="rarity-dot c-mythic"></span></td><td>Antoniooo</td><td>14K</td></tr>
+                <tr class="clickable-row" onclick="setBase('15K')"><td><span class="rarity-dot c-mythic"></span></td><td>Girafa Celeste</td><td>15K</td></tr>
+                <tr class="clickable-row" onclick="setBase('15.5K')"><td><span class="rarity-dot c-mythic"></span></td><td>Mr Peppermint</td><td>15.5K</td></tr>
+                <tr class="clickable-row" onclick="setBase('16K')"><td><span class="rarity-dot c-mythic"></span></td><td>Perochello Lemonchello</td><td>16K</td></tr>
+                <tr class="clickable-row" onclick="setBase('17K')"><td><span class="rarity-dot c-mythic"></span></td><td>Tang Tang Kelentang</td><td>17K</td></tr>
+                <tr class="clickable-row" onclick="setBase('18K')"><td><span class="rarity-dot c-mythic"></span></td><td>Avocadorilla</td><td>18K</td></tr>
+                <tr class="clickable-row" onclick="setBase('19K')"><td><span class="rarity-dot c-mythic"></span></td><td>Patapimus Maximus</td><td>19K</td></tr>
+                <tr class="clickable-row" onclick="setBase('20K')"><td><span class="rarity-dot c-mythic"></span></td><td>Tirilikalika Tirilikaliko</td><td>20K</td></tr>
+                <tr class="clickable-row" onclick="setBase('21K')"><td><span class="rarity-dot c-mythic"></span></td><td>Santoniooo</td><td>21K</td></tr>
+                <tr class="clickable-row" onclick="setBase('22.5K')"><td><span class="rarity-dot c-mythic"></span></td><td>Los Matteos</td><td>22.5K</td></tr>
+                <tr class="clickable-row" onclick="setBase('25K')"><td><span class="rarity-dot c-mythic"></span></td><td>Ti Ti Ti Sahur</td><td>25K</td></tr>
+                <tr class="clickable-row" onclick="setBase('27K')"><td><span class="rarity-dot c-mythic"></span></td><td>Fishinis Santinis</td><td>27K</td></tr>
+
+                <tr class="clickable-row" onclick="setBase('10K')"><td><span class="rarity-dot c-god"></span></td><td>Cocofanto Elefanto</td><td>10K</td></tr>
+                <tr class="clickable-row" onclick="setBase('25K')"><td><span class="rarity-dot c-god"></span></td><td>Tob Tobi Tob</td><td>25K</td></tr>
+                <tr class="clickable-row" onclick="setBase('50K')"><td><span class="rarity-dot c-god"></span></td><td>Tralalero Tralala</td><td>50K</td></tr>
+                <tr class="clickable-row" onclick="setBase('75K')"><td><span class="rarity-dot c-god"></span></td><td>Odin Din Din Dun</td><td>75K</td></tr>
+                <tr class="clickable-row" onclick="setBase('80K')"><td><span class="rarity-dot c-god"></span></td><td>Akulini Cactusini</td><td>80K</td></tr>
+                <tr class="clickable-row" onclick="setBase('80K')"><td><span class="rarity-dot c-god"></span></td><td>Chachechicha</td><td>80K</td></tr>
+                <tr class="clickable-row" onclick="setBase('90K')"><td><span class="rarity-dot c-god"></span></td><td>Espressona Signora</td><td>90K</td></tr>
+                <tr class="clickable-row" onclick="setBase('100K')"><td><span class="rarity-dot c-god"></span></td><td>La Vaca Saturno Saturnita</td><td>100K</td></tr>
+                <tr class="clickable-row" onclick="setBase('105K')"><td><span class="rarity-dot c-god"></span></td><td>Centralucci Nuclearucci</td><td>105K</td></tr>
+                <tr class="clickable-row" onclick="setBase('110K')"><td><span class="rarity-dot c-god"></span></td><td>Ecco Cavallo Virtuoso</td><td>110K</td></tr>
+                <tr class="clickable-row" onclick="setBase('115K')"><td><span class="rarity-dot c-god"></span></td><td>Los Vaquitas Saturnitas</td><td>115K</td></tr>
+                <tr class="clickable-row" onclick="setBase('120K')"><td><span class="rarity-dot c-god"></span></td><td>Bulbito Bandito Traktorito</td><td>120K</td></tr>
+                <tr class="clickable-row" onclick="setBase('125K')"><td><span class="rarity-dot c-god"></span></td><td>Bananananito Bandito</td><td>125K</td></tr>
+                <tr class="clickable-row" onclick="setBase('130K')"><td><span class="rarity-dot c-god"></span></td><td>Chillin Chili</td><td>130K</td></tr>
+                <tr class="clickable-row" onclick="setBase('130K')"><td><span class="rarity-dot c-god"></span></td><td>Trippi Troppi Troppa Trippa</td><td>130K</td></tr>
+                <tr class="clickable-row" onclick="setBase('135K')"><td><span class="rarity-dot c-god"></span></td><td>Brri Bicus Dicus</td><td>135K</td></tr>
+                <tr class="clickable-row" onclick="setBase('140K')"><td><span class="rarity-dot c-god"></span></td><td>Cioccolatini Pancioncioni</td><td>140K</td></tr>
+                <tr class="clickable-row" onclick="setBase('145K')"><td><span class="rarity-dot c-god"></span></td><td>Brr Es Teh Patipum</td><td>145K</td></tr>
+                <tr class="clickable-row" onclick="setBase('150K')"><td><span class="rarity-dot c-god"></span></td><td>Torrtuginni Dragonfrutinni</td><td>150K</td></tr>
+                <tr class="clickable-row" onclick="setBase('155K')"><td><span class="rarity-dot c-god"></span></td><td>Los Bros</td><td>155K</td></tr>
+                <tr class="clickable-row" onclick="setBase('160K')"><td><span class="rarity-dot c-god"></span></td><td>Bambini Tankini</td><td>160K</td></tr>
+                <tr class="clickable-row" onclick="setBase('165K')"><td><span class="rarity-dot c-god"></span></td><td>Jiqi Jiqi Shizhon</td><td>165K</td></tr>
+                <tr class="clickable-row" onclick="setBase('167K')"><td><span class="rarity-dot c-god"></span></td><td>Hotti Coccolli</td><td>167K</td></tr>
+                <tr class="clickable-row" onclick="setBase('170K')"><td><span class="rarity-dot c-god"></span></td><td>Los Crocodillitos</td><td>170K</td></tr>
+                <tr class="clickable-row" onclick="setBase('175K')"><td><span class="rarity-dot c-god"></span></td><td>Agarrini La Palini</td><td>175K</td></tr>
+                <tr class="clickable-row" onclick="setBase('180K')"><td><span class="rarity-dot c-god"></span></td><td>Alessiooooooo</td><td>180K</td></tr>
+                <tr class="clickable-row" onclick="setBase('190K')"><td><span class="rarity-dot c-god"></span></td><td>Karkerkar Kurkur</td><td>190K</td></tr>
+                <tr class="clickable-row" onclick="setBase('200K')"><td><span class="rarity-dot c-god"></span></td><td>Piccionetta Machina</td><td>200K</td></tr>
+                <tr class="clickable-row" onclick="setBase('205K')"><td><span class="rarity-dot c-god"></span></td><td>Pipoqueira Motoqueira</td><td>205K</td></tr>
+                <tr class="clickable-row" onclick="setBase('210K')"><td><span class="rarity-dot c-god"></span></td><td>Il Piccione Musculone</td><td>210K</td></tr>
+                <tr class="clickable-row" onclick="setBase('215K')"><td><span class="rarity-dot c-god"></span></td><td>Nooo My Present</td><td>215K</td></tr>
+                <tr class="clickable-row" onclick="setBase('220K')"><td><span class="rarity-dot c-god"></span></td><td>Job Job Job Sahur</td><td>220K</td></tr>
+                <tr class="clickable-row" onclick="setBase('230K')"><td><span class="rarity-dot c-god"></span></td><td>Las Sis</td><td>230K</td></tr>
+                <tr class="clickable-row" onclick="setBase('235K')"><td><span class="rarity-dot c-god"></span></td><td>La Matcha Assassino</td><td>235K</td></tr>
+                <tr class="clickable-row" onclick="setBase('240K')"><td><span class="rarity-dot c-god"></span></td><td>Il Mastodontico Telepiedone</td><td>240K</td></tr>
+                <tr class="clickable-row" onclick="setBase('245K')"><td><span class="rarity-dot c-god"></span></td><td>Los Christmas bros</td><td>245K</td></tr>
+                <tr class="clickable-row" onclick="setBase('250K')"><td><span class="rarity-dot c-god"></span></td><td>Malame Amarale</td><td>250K</td></tr>
+                <tr class="clickable-row" onclick="setBase('255K')"><td><span class="rarity-dot c-god"></span></td><td>Il Bisonte Giuppitere</td><td>255K</td></tr>
+                <tr class="clickable-row" onclick="setBase('270K')"><td><span class="rarity-dot c-god"></span></td><td>Belugelo Beluga</td><td>270K</td></tr>
+                <tr class="clickable-row" onclick="setBase('275K')"><td><span class="rarity-dot c-god"></span></td><td>Bella PanCasita</td><td>275K</td></tr>
+                <tr class="clickable-row" onclick="setBase('300K')"><td><span class="rarity-dot c-god"></span></td><td>Missilpython Turbozzo</td><td>300K</td></tr>
+
+                <tr class="clickable-row" onclick="setBase('200K')"><td><span class="rarity-dot c-secret"></span></td><td>Los Tralaleritos</td><td>200K</td></tr>
+                <tr class="clickable-row" onclick="setBase('200K')"><td><span class="rarity-dot c-secret"></span></td><td>Los Tralaleritas</td><td>200K</td></tr>
+                <tr class="clickable-row" onclick="setBase('300K')"><td><span class="rarity-dot c-secret"></span></td><td>Trenostruzzo Turbo 3000</td><td>300K</td></tr>
+                <tr class="clickable-row" onclick="setBase('375K')"><td><span class="rarity-dot c-secret"></span></td><td>Kravilino Cekicino</td><td>375K</td></tr>
+                <tr class="clickable-row" onclick="setBase('400K')"><td><span class="rarity-dot c-secret"></span></td><td>Los Orcaleritos</td><td>400K</td></tr>
+                <tr class="clickable-row" onclick="setBase('450K')"><td><span class="rarity-dot c-secret"></span></td><td>Los Couples</td><td>450K</td></tr>
+                <tr class="clickable-row" onclick="setBase('470K')"><td><span class="rarity-dot c-secret"></span></td><td>Las Agarrinis</td><td>470K</td></tr>
+                <tr class="clickable-row" onclick="setBase('500K')"><td><span class="rarity-dot c-secret"></span></td><td>Piccione Macchina</td><td>500K</td></tr>
+                <tr class="clickable-row" onclick="setBase('500K')"><td><span class="rarity-dot c-secret"></span></td><td>Peeling Peely</td><td>500K</td></tr>
+                <tr class="clickable-row" onclick="setBase('550K')"><td><span class="rarity-dot c-secret"></span></td><td>Pakrahmatmamatcita</td><td>550K</td></tr>
+                <tr class="clickable-row" onclick="setBase('600K')"><td><span class="rarity-dot c-secret"></span></td><td>Pakrahmatmamat</td><td>600K</td></tr>
+                <tr class="clickable-row" onclick="setBase('700K')"><td><span class="rarity-dot c-secret"></span></td><td>Los Job Jobsitos</td><td>700K</td></tr>
+                <tr class="clickable-row" onclick="setBase('700K')"><td><span class="rarity-dot c-secret"></span></td><td>TrenoStruzzo Turbo 4000</td><td>700K</td></tr>
+                <tr class="clickable-row" onclick="setBase('800K')"><td><span class="rarity-dot c-secret"></span></td><td>Anpali Babel</td><td>800K</td></tr>
+                <tr class="clickable-row" onclick="setBase('900K')"><td><span class="rarity-dot c-secret"></span></td><td>Los Karkeritos</td><td>900K</td></tr>
+                <tr class="clickable-row" onclick="setBase('1M')"><td><span class="rarity-dot c-secret"></span></td><td>Orcalero Orcala</td><td>1M</td></tr>
+                <tr class="clickable-row" onclick="setBase('1.2M')"><td><span class="rarity-dot c-secret"></span></td><td>Frogino Assassino</td><td>1.2M</td></tr>
+                <tr class="clickable-row" onclick="setBase('1.4M')"><td><span class="rarity-dot c-secret"></span></td><td>Pickolini Malakini</td><td>1.4M</td></tr>
+                <tr class="clickable-row" onclick="setBase('1.5M')"><td><span class="rarity-dot c-secret"></span></td><td>Ketchuru and Musturu</td><td>1.5M</td></tr>
+                <tr class="clickable-row" onclick="setBase('1.75M')"><td><span class="rarity-dot c-secret"></span></td><td>Pot Hotspotina</td><td>1.75M</td></tr>
+                <tr class="clickable-row" onclick="setBase('2M')"><td><span class="rarity-dot c-secret"></span></td><td>Pot Hotspot</td><td>2M</td></tr>
+                <tr class="clickable-row" onclick="setBase('2.1M')"><td><span class="rarity-dot c-secret"></span></td><td>21</td><td>2.1M</td></tr>
+                <tr class="clickable-row" onclick="setBase('2.2M')"><td><span class="rarity-dot c-secret"></span></td><td>Los Mobilis</td><td>2.2M</td></tr>
+                <tr class="clickable-row" onclick="setBase('2.5M')"><td><span class="rarity-dot c-secret"></span></td><td>Nooo My Hotspot</td><td>2.5M</td></tr>
+                <tr class="clickable-row" onclick="setBase('2.7M')"><td><span class="rarity-dot c-secret"></span></td><td>Elf Elf Elf</td><td>2.7M</td></tr>
+                <tr class="clickable-row" onclick="setBase('3M')"><td><span class="rarity-dot c-secret"></span></td><td>Garamaramadungdung</td><td>3M</td></tr>
+                <tr class="clickable-row" onclick="setBase('3.5M')"><td><span class="rarity-dot c-secret"></span></td><td>Pirulitoita Bicicleteira</td><td>3.5M</td></tr>
+                <tr class="clickable-row" onclick="setBase('4M')"><td><span class="rarity-dot c-secret"></span></td><td>Il Sacro Cabrospaghetti</td><td>4M</td></tr>
+                <tr class="clickable-row" onclick="setBase('4.2M')"><td><span class="rarity-dot c-secret"></span></td><td>Tatoruman</td><td>4.2M</td></tr>
+                <tr class="clickable-row" onclick="setBase('4.5M')"><td><span class="rarity-dot c-secret"></span></td><td>Chicleteirina Bicicleteirina</td><td>4.5M</td></tr>
+                <tr class="clickable-row" onclick="setBase('5M')"><td><span class="rarity-dot c-secret"></span></td><td>La Grande Combinacion</td><td>5M</td></tr>
+                <tr class="clickable-row" onclick="setBase('5.5M')"><td><span class="rarity-dot c-secret"></span></td><td>Los SantaCitos</td><td>5.5M</td></tr>
+                <tr class="clickable-row" onclick="setBase('5.5M')"><td><span class="rarity-dot c-secret"></span></td><td>Yess My Hotspot</td><td>5.5M</td></tr>
+                <tr class="clickable-row" onclick="setBase('6M')"><td><span class="rarity-dot c-secret"></span></td><td>Le Golem De Frigider</td><td>6M</td></tr>
+                <tr class="clickable-row" onclick="setBase('6.5M')"><td><span class="rarity-dot c-secret"></span></td><td>Cornball Sahur</td><td>6.5M</td></tr>
+                <tr class="clickable-row" onclick="setBase('6.7M')"><td><span class="rarity-dot c-secret"></span></td><td>67</td><td>6.7M</td></tr>
+                <tr class="clickable-row" onclick="setBase('7M')"><td><span class="rarity-dot c-secret"></span></td><td>Los Esok Sekolitos</td><td>7M</td></tr>
+                <tr class="clickable-row" onclick="setBase('7.3M')"><td><span class="rarity-dot c-secret"></span></td><td>Roobinha Acerolinha</td><td>7.3M</td></tr>
+                <tr class="clickable-row" onclick="setBase('7.5M')"><td><span class="rarity-dot c-secret"></span></td><td>Coccoblade</td><td>7.5M</td></tr>
+                <tr class="clickable-row" onclick="setBase('8M')"><td><span class="rarity-dot c-secret"></span></td><td>Chicleteira Bicicleteira</td><td>8M</td></tr>
+                <tr class="clickable-row" onclick="setBase('8.5M')"><td><span class="rarity-dot c-secret"></span></td><td>Cacasito Satelito</td><td>8.5M</td></tr>
+                <tr class="clickable-row" onclick="setBase('9M')"><td><span class="rarity-dot c-secret"></span></td><td>La Christmas Combinacion</td><td>9M</td></tr>
+                <tr class="clickable-row" onclick="setBase('10M')"><td><span class="rarity-dot c-secret"></span></td><td>Ketupat Kepat Prekupat</td><td>10M</td></tr>
+                <tr class="clickable-row" onclick="setBase('11.5M')"><td><span class="rarity-dot c-secret"></span></td><td>Catino Timeno</td><td>11.5M</td></tr>
+                <tr class="clickable-row" onclick="setBase('12M')"><td><span class="rarity-dot c-secret"></span></td><td>Dul Dul Dul</td><td>12M</td></tr>
+                <tr class="clickable-row" onclick="setBase('13M')"><td><span class="rarity-dot c-secret"></span></td><td>W or L</td><td>13M</td></tr>
+                <tr class="clickable-row" onclick="setBase('13.5M')"><td><span class="rarity-dot c-secret"></span></td><td>Nooo My Bicicleteira</td><td>13.5M</td></tr>
+                <tr class="clickable-row" onclick="setBase('14M')"><td><span class="rarity-dot c-secret"></span></td><td>Cookipat</td><td>14M</td></tr>
+                <tr class="clickable-row" onclick="setBase('15M')"><td><span class="rarity-dot c-secret"></span></td><td>Los Garamadungcitos</td><td>15M</td></tr>
+                <tr class="clickable-row" onclick="setBase('16M')"><td><span class="rarity-dot c-secret"></span></td><td>Aquanaut</td><td>16M</td></tr>
+                <tr class="clickable-row" onclick="setBase('17M')"><td><span class="rarity-dot c-secret"></span></td><td>Lirili Ralilu</td><td>17M</td></tr>
+                <tr class="clickable-row" onclick="setBase('20M')"><td><span class="rarity-dot c-secret"></span></td><td>La Esok Sekolah</td><td>20M</td></tr>
+                <tr class="clickable-row" onclick="setBase('22M')"><td><span class="rarity-dot c-secret"></span></td><td>Pitiata Baem</td><td>22M</td></tr>
+                <tr class="clickable-row" onclick="setBase('25M')"><td><span class="rarity-dot c-secret"></span></td><td>Chimpanzini Kingini</td><td>25M</td></tr>
+                <tr class="clickable-row" onclick="setBase('25M')"><td><span class="rarity-dot c-secret"></span></td><td>25</td><td>25M</td></tr>
+                <tr class="clickable-row" onclick="setBase('27M')"><td><span class="rarity-dot c-secret"></span></td><td>Yule Yule Il Reino</td><td>27M</td></tr>
+                <tr class="clickable-row" onclick="setBase('30M')"><td><span class="rarity-dot c-secret"></span></td><td>Strawberry Elephant</td><td>30M</td></tr>
+                <tr class="clickable-row" onclick="setBase('32M')"><td><span class="rarity-dot c-secret"></span></td><td>Klombo</td><td>32M</td></tr>
+                <tr class="clickable-row" onclick="setBase('33M')"><td><span class="rarity-dot c-secret"></span></td><td>Tictac Tictac Sahur</td><td>33M</td></tr>
+                <tr class="clickable-row" onclick="setBase('35M')"><td><span class="rarity-dot c-secret"></span></td><td>Shtekerito el Bulbonito</td><td>35M</td></tr>
+                <tr class="clickable-row" onclick="setBase('40M')"><td><span class="rarity-dot c-secret"></span></td><td>Spaghetti Tualetti</td><td>40M</td></tr>
+                <tr class="clickable-row" onclick="setBase('42M')"><td><span class="rarity-dot c-secret"></span></td><td>Santatini el Treeetini</td><td>42M</td></tr>
+                <tr class="clickable-row" onclick="setBase('45M')"><td><span class="rarity-dot c-secret"></span></td><td>Cabritos Brotheritos</td><td>45M</td></tr>
+                <tr class="clickable-row" onclick="setBase('50M')"><td><span class="rarity-dot c-secret"></span></td><td>Cannelloni Dragoni</td><td>50M</td></tr>
+                <tr class="clickable-row" onclick="setBase('57M')"><td><span class="rarity-dot c-secret"></span></td><td>Gorgonzilla</td><td>57M</td></tr>
+                <tr class="clickable-row" onclick="setBase('60M')"><td><span class="rarity-dot c-secret"></span></td><td>La Crazy Combinacion</td><td>60M</td></tr>
+                <tr class="clickable-row" onclick="setBase('75M')"><td><span class="rarity-dot c-secret"></span></td><td>Gigalitraktos Spidorobos</td><td>75M</td></tr>
+                <tr class="clickable-row" onclick="setBase('90M')"><td><span class="rarity-dot c-secret"></span></td><td>Tiramisubmarini</td><td>90M</td></tr>
+                <tr class="clickable-row" onclick="setBase('100M')"><td><span class="rarity-dot c-secret"></span></td><td>Garbagzilla</td><td>100M</td></tr>
+                <tr class="clickable-row" onclick="setBase('115M')"><td><span class="rarity-dot c-secret"></span></td><td>Cannone Maledettone</td><td>115M</td></tr>
+
+                <tr class="clickable-row" onclick="setBase('350M')"><td><span class="rarity-dot c-goat"></span></td><td>Skibidi Toilet</td><td>350M</td></tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<script>
+function setBase(val) {
+    document.getElementById('char-input').value = val;
+    calculate();
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+function parseUnitValue(str) {
+    if (!str) return 0;
+    str = str.toUpperCase().replace(/\s/g, '');
+    let multiplier = 1;
+    if (str.endsWith('K')) multiplier = 1e3;
+    else if (str.endsWith('M')) multiplier = 1e6;
+    else if (str.endsWith('B')) multiplier = 1e9;
+    else if (str.endsWith('T')) multiplier = 1e12;
+    const numPart = str.replace(/[KMBT]/g, '');
+    const val = parseFloat(numPart);
+    return isNaN(val) ? 0 : val * multiplier;
+}
+
+function formatUnitValue(num) {
+    if (num === 0) return "0";
+    const units = [{ value: 1e12, symbol: 'T' }, { value: 1e9, symbol: 'B' }, { value: 1e6, symbol: 'M' }, { value: 1e3, symbol: 'K' }];
+    for (let i = 0; i < units.length; i++) {
+        if (num >= units[i].value) {
+            let res = num / units[i].value;
+            return res.toFixed(2).replace(/\.00$/, '') + units[i].symbol;
+        }
+    }
+    return num.toLocaleString();
+}
+
+function calculate() {
+    const inputStr = document.getElementById('char-input').value;
+    const baseAmount = parseUnitValue(inputStr);
+    const attrValue = parseFloat(document.getElementById('attr-select').value);
+    let mutationSum = 0;
+    let mutationLog = "";
+    document.querySelectorAll('.mutation:checked').forEach(m => {
+        let val = parseFloat(m.value);
+        mutationSum += val;
+        mutationLog += ` + ${val}`;
+    });
+    const finalEarnings = baseAmount * (attrValue + mutationSum);
+    document.getElementById('result').innerText = `$${formatUnitValue(finalEarnings)} /s`;
+    document.getElementById('formula-text').innerText = `${baseAmount.toLocaleString()} * (${attrValue}${mutationLog})`;
+}
+</script>
+
+</body>
+</html>
